@@ -23,6 +23,7 @@ interface CalendarViewProps {
   reminders: Reminder[];
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
+  onClickReminder?: (reminder: Reminder) => void;
 }
 
 const typeColors: Record<string, string> = {
@@ -31,7 +32,7 @@ const typeColors: Record<string, string> = {
   event: 'bg-emerald-500',
 };
 
-export function CalendarView({ reminders, selectedDate, onSelectDate }: CalendarViewProps) {
+export function CalendarView({ reminders, selectedDate, onSelectDate, onClickReminder }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const monthStart = startOfMonth(currentMonth);
@@ -148,9 +149,10 @@ export function CalendarView({ reminders, selectedDate, onSelectDate }: Calendar
               <div
                 key={r.id}
                 className={cn(
-                  'flex items-start gap-2 p-2 rounded-lg bg-muted/50',
+                  'flex items-start gap-2 p-2 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted/80 transition-colors',
                   r.completed && 'opacity-50'
                 )}
+                onClick={() => onClickReminder?.(r)}
               >
                 <span className={cn('w-2 h-2 rounded-full mt-1.5 shrink-0', typeColors[r.type])} />
                 <div className="min-w-0">

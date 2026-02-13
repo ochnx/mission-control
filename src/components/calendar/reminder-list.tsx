@@ -10,6 +10,7 @@ import type { Reminder } from '@/types';
 interface ReminderListProps {
   reminders: Reminder[];
   onToggleComplete: (id: string, completed: boolean) => void;
+  onClickReminder?: (reminder: Reminder) => void;
 }
 
 const typeIcons: Record<string, typeof Clock> = {
@@ -24,7 +25,7 @@ const typeColors: Record<string, string> = {
   event: 'text-emerald-400',
 };
 
-export function ReminderList({ reminders, onToggleComplete }: ReminderListProps) {
+export function ReminderList({ reminders, onToggleComplete, onClickReminder }: ReminderListProps) {
   const upcoming = reminders.filter((r) => !r.completed);
   const completed = reminders.filter((r) => r.completed);
 
@@ -36,9 +37,10 @@ export function ReminderList({ reminders, onToggleComplete }: ReminderListProps)
       <div
         key={reminder.id}
         className={cn(
-          'flex items-center gap-3 p-3 rounded-lg glass-card group hover:border-primary/20 transition-all',
+          'flex items-center gap-3 p-3 rounded-lg glass-card group hover:border-primary/20 transition-all cursor-pointer',
           reminder.completed && 'opacity-50'
         )}
+        onClick={() => onClickReminder?.(reminder)}
       >
         <Button
           variant="ghost"

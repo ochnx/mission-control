@@ -10,6 +10,7 @@ import type { Memory } from '@/types';
 interface MemoryCardProps {
   memory: Memory;
   onDeleted: () => void;
+  onClick?: () => void;
 }
 
 const categoryColors: Record<string, string> = {
@@ -20,14 +21,14 @@ const categoryColors: Record<string, string> = {
   Projects: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
 };
 
-export function MemoryCard({ memory, onDeleted }: MemoryCardProps) {
+export function MemoryCard({ memory, onDeleted, onClick }: MemoryCardProps) {
   const handleDelete = async () => {
     await supabase.from('mc_memories').delete().eq('id', memory.id);
     onDeleted();
   };
 
   return (
-    <div className="glass-card rounded-lg p-4 group hover:border-primary/20 transition-all">
+    <div className="glass-card rounded-lg p-4 group hover:border-primary/20 transition-all cursor-pointer" onClick={onClick}>
       <div className="flex items-start justify-between mb-2">
         <Badge
           variant="outline"

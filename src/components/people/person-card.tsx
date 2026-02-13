@@ -10,16 +10,17 @@ import type { Person } from '@/types';
 interface PersonCardProps {
   person: Person;
   onUpdated: () => void;
+  onClick?: () => void;
 }
 
-export function PersonCard({ person, onUpdated }: PersonCardProps) {
+export function PersonCard({ person, onUpdated, onClick }: PersonCardProps) {
   const handleDelete = async () => {
     await supabase.from('mc_people').delete().eq('id', person.id);
     onUpdated();
   };
 
   return (
-    <div className="glass-card rounded-lg p-4 group hover:border-primary/20 transition-all">
+    <div className="glass-card rounded-lg p-4 group hover:border-primary/20 transition-all cursor-pointer" onClick={onClick}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">

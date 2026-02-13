@@ -23,6 +23,7 @@ import { TaskCard } from './task-card';
 interface KanbanBoardProps {
   tasks: Task[];
   onStatusChange: (taskId: string, status: Task['status']) => void;
+  onTaskClick?: (task: Task) => void;
 }
 
 const columns: { id: Task['status']; title: string }[] = [
@@ -31,7 +32,7 @@ const columns: { id: Task['status']; title: string }[] = [
   { id: 'done', title: 'Done' },
 ];
 
-export function KanbanBoard({ tasks, onStatusChange }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, onStatusChange, onTaskClick }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
   const sensors = useSensors(
@@ -84,7 +85,7 @@ export function KanbanBoard({ tasks, onStatusChange }: KanbanBoardProps) {
                 strategy={verticalListSortingStrategy}
               >
                 {columnTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} />
+                  <TaskCard key={task.id} task={task} onClick={onTaskClick} />
                 ))}
               </SortableContext>
             </KanbanColumn>

@@ -6,6 +6,7 @@ import type { Reminder } from '@/types';
 import { CalendarView } from '@/components/calendar/calendar-view';
 import { ReminderList } from '@/components/calendar/reminder-list';
 import { CreateReminderDialog } from '@/components/calendar/create-reminder-dialog';
+import { ReminderDetailDialog } from '@/components/calendar/reminder-detail-dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus } from 'lucide-react';
@@ -15,6 +16,8 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedReminder, setSelectedReminder] = useState<Reminder | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const fetchReminders = useCallback(async () => {
     const { data } = await supabase
@@ -67,10 +70,11 @@ export default function CalendarPage() {
               reminders={reminders}
               selectedDate={selectedDate}
               onSelectDate={setSelectedDate}
+              onClickReminder={(r) => { setSelectedReminder(r); setDetailOpen(true); }}
             />
           </TabsContent>
           <TabsContent value="list">
-            <ReminderList reminders={reminders} onToggleComplete={toggleComplete} />
+            <ReminderList reminders={reminders} onToggleComplete={toggleComplete} onClickReminder={(r) => { setSelectedReminder(r); setDetailOpen(true); }} />
           </TabsContent>
         </Tabs>
       )}
@@ -79,6 +83,13 @@ export default function CalendarPage() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={fetchReminders}
+      />
+
+      <ReminderDetailDialog
+        reminder={selectedReminder}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onUpdated={fetchReminders}
       />
     </div>
   );

@@ -10,6 +10,7 @@ import type { Task } from '@/types';
 
 interface TaskCardProps {
   task: Task;
+  onClick?: (task: Task) => void;
 }
 
 const priorityColors: Record<string, string> = {
@@ -18,7 +19,7 @@ const priorityColors: Record<string, string> = {
   low: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
 };
 
-export function TaskCard({ task }: TaskCardProps) {
+export function TaskCard({ task, onClick }: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -50,7 +51,7 @@ export function TaskCard({ task }: TaskCardProps) {
         >
           <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
         </button>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onClick?.(task)}>
           <p className="text-sm font-medium leading-tight">{task.title}</p>
           {task.description && (
             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">

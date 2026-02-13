@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import type { Memory } from '@/types';
 import { MemoryCard } from '@/components/memory/memory-card';
 import { CreateMemoryDialog } from '@/components/memory/create-memory-dialog';
+import { MemoryDetailDialog } from '@/components/memory/memory-detail-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search } from 'lucide-react';
@@ -19,6 +20,8 @@ export default function MemoryPage() {
   const [category, setCategory] = useState<string>('All');
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
+  const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const fetchMemories = useCallback(async () => {
     let query = supabase.from('mc_memories').select('*').order('created_at', { ascending: false });
@@ -96,7 +99,7 @@ export default function MemoryPage() {
       ) : (
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {memories.map((memory) => (
-            <MemoryCard key={memory.id} memory={memory} onDeleted={fetchMemories} />
+            <MemoryCard key={memory.id} memory={memory} onDeleted={fetchMemories} onClick={() => { setSelectedMemory(memory); setDetailOpen(true); }} />
           ))}
         </div>
       )}
@@ -105,6 +108,13 @@ export default function MemoryPage() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={fetchMemories}
+      />
+
+      <MemoryDetailDialog
+        memory={selectedMemory}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onUpdated={fetchMemories}
       />
     </div>
   );

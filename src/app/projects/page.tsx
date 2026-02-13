@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import type { Project } from '@/types';
 import { ProjectCard } from '@/components/projects/project-card';
 import { CreateProjectDialog } from '@/components/projects/create-project-dialog';
+import { ProjectDetailDialog } from '@/components/projects/project-detail-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus } from 'lucide-react';
@@ -17,6 +18,8 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [createOpen, setCreateOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const fetchProjects = useCallback(async () => {
     let query = supabase.from('mc_projects').select('*').order('updated_at', { ascending: false });
@@ -105,7 +108,7 @@ export default function ProjectsPage() {
               </h3>
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                 {activeProjects.map((project) => (
-                  <ProjectCard key={project.id} project={project} onUpdated={fetchProjects} />
+                  <ProjectCard key={project.id} project={project} onUpdated={fetchProjects} onClick={() => { setSelectedProject(project); setDetailOpen(true); }} />
                 ))}
               </div>
             </div>
@@ -118,7 +121,7 @@ export default function ProjectsPage() {
               </h3>
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                 {backlog.map((project) => (
-                  <ProjectCard key={project.id} project={project} onUpdated={fetchProjects} />
+                  <ProjectCard key={project.id} project={project} onUpdated={fetchProjects} onClick={() => { setSelectedProject(project); setDetailOpen(true); }} />
                 ))}
               </div>
             </div>
@@ -131,7 +134,7 @@ export default function ProjectsPage() {
               </h3>
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                 {other.map((project) => (
-                  <ProjectCard key={project.id} project={project} onUpdated={fetchProjects} />
+                  <ProjectCard key={project.id} project={project} onUpdated={fetchProjects} onClick={() => { setSelectedProject(project); setDetailOpen(true); }} />
                 ))}
               </div>
             </div>
@@ -149,6 +152,13 @@ export default function ProjectsPage() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={fetchProjects}
+      />
+
+      <ProjectDetailDialog
+        project={selectedProject}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onUpdated={fetchProjects}
       />
     </div>
   );

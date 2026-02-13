@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import type { Person } from '@/types';
 import { PersonCard } from '@/components/people/person-card';
 import { CreatePersonDialog } from '@/components/people/create-person-dialog';
+import { PersonDetailSheet } from '@/components/people/person-detail-sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search } from 'lucide-react';
@@ -14,6 +15,8 @@ export default function PeoplePage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const fetchPeople = useCallback(async () => {
     let query = supabase.from('mc_people').select('*').order('name', { ascending: true });
@@ -84,7 +87,7 @@ export default function PeoplePage() {
                 </h3>
                 <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                   {contacts.map((person) => (
-                    <PersonCard key={person.id} person={person} onUpdated={fetchPeople} />
+                    <PersonCard key={person.id} person={person} onUpdated={fetchPeople} onClick={() => { setSelectedPerson(person); setDetailOpen(true); }} />
                   ))}
                 </div>
               </div>
@@ -96,6 +99,13 @@ export default function PeoplePage() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={fetchPeople}
+      />
+
+      <PersonDetailSheet
+        person={selectedPerson}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onUpdated={fetchPeople}
       />
     </div>
   );

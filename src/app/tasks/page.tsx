@@ -6,6 +6,7 @@ import type { Task } from '@/types';
 import { KanbanBoard } from '@/components/tasks/kanban-board';
 import { TaskFilters } from '@/components/tasks/task-filters';
 import { CreateTaskDialog } from '@/components/tasks/create-task-dialog';
+import { TaskDetailSheet } from '@/components/tasks/task-detail-sheet';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
@@ -15,6 +16,8 @@ export default function TasksPage() {
   const [filterAssignee, setFilterAssignee] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [createOpen, setCreateOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const fetchTasks = useCallback(async () => {
     let query = supabase.from('mc_tasks').select('*').order('created_at', { ascending: false });
@@ -69,13 +72,27 @@ export default function TasksPage() {
           Loading tasks...
         </div>
       ) : (
-        <KanbanBoard tasks={tasks} onStatusChange={updateTaskStatus} />
+        <KanbanBoard
+          tasks={tasks}
+          onStatusChange={updateTaskStatus}
+          onTaskClick={(task) => {
+            setSelectedTask(task);
+            setDetailOpen(true);
+          }}
+        />
       )}
 
       <CreateTaskDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={fetchTasks}
+      />
+
+      <TaskDetailSheet
+        task={selectedTask}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onUpdated={fetchTasks}
       />
     </div>
   );

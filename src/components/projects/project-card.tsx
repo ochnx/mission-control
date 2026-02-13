@@ -11,6 +11,7 @@ import type { Project } from '@/types';
 interface ProjectCardProps {
   project: Project;
   onUpdated: () => void;
+  onClick?: () => void;
 }
 
 const statusColors: Record<string, string> = {
@@ -21,14 +22,14 @@ const statusColors: Record<string, string> = {
   done: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
 };
 
-export function ProjectCard({ project, onUpdated }: ProjectCardProps) {
+export function ProjectCard({ project, onUpdated, onClick }: ProjectCardProps) {
   const handleDelete = async () => {
     await supabase.from('mc_projects').delete().eq('id', project.id);
     onUpdated();
   };
 
   return (
-    <div className="glass-card rounded-lg p-4 group hover:border-primary/20 transition-all">
+    <div className="glass-card rounded-lg p-4 group hover:border-primary/20 transition-all cursor-pointer" onClick={onClick}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
