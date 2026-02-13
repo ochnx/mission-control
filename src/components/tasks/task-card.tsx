@@ -38,8 +38,9 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
     <div
       ref={setNodeRef}
       style={style}
+      onClick={() => onClick?.(task)}
       className={cn(
-        'group glass-card rounded-lg p-3 cursor-default transition-all hover:border-primary/20',
+        'group glass-card rounded-lg p-3 cursor-pointer transition-all hover:border-primary/20',
         isDragging && 'opacity-50'
       )}
     >
