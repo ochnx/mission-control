@@ -24,6 +24,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -38,21 +39,23 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
     <div
       ref={setNodeRef}
       style={style}
-      onClick={() => onClick?.(task)}
       className={cn(
         'group glass-card rounded-lg p-3 cursor-pointer transition-all hover:border-primary/20',
         isDragging && 'opacity-50'
       )}
+      onClick={() => onClick?.(task)}
     >
       <div className="flex items-start gap-2">
         <button
+          ref={setActivatorNodeRef}
           {...attributes}
           {...listeners}
           className="mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+          onClick={(e) => e.stopPropagation()}
         >
           <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
         </button>
-        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onClick?.(task)}>
+        <div className="flex-1 min-w-0">
           <p className="text-sm font-medium leading-tight">{task.title}</p>
           {task.description && (
             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
