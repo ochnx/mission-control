@@ -1,68 +1,35 @@
-const GATEWAY_URL = 'wss://mac-mini-von-oskar.tail31e8e5.ts.net';
-const GATEWAY_TOKEN = 'geheim';
+const WAKE_URL = 'https://mac-mini-von-oskar.tail31e8e5.ts.net/wake';
+const WAKE_TOKEN = 'geheim';
 
+/**
+ * Wake the agent via simple HTTP POST.
+ * The wake-proxy on the Mac Mini handles the request and calls
+ * `openclaw system event --mode now` locally.
+ */
 export async function wakeAgent(text: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const timeout = setTimeout(() => {
-      console.warn('[wake] timeout after 5s — gateway unreachable');
-      try { ws.close(); } catch {}
-      resolve(false);
-    }, 5000);
+  try {
+    const res = await fetch(WAKE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${WAKE_TOKEN}`,
+      },
+      body: JSON.stringify({ text: `MC action: ${text}` }),
+      signal: AbortSignal.timeout(5000),
+    });
 
-    let ws: WebSocket;
-    try {
-      // Pass token as query param (some gateways reject connect-frame auth from browsers)
-      ws = new WebSocket(`${GATEWAY_URL}?token=${GATEWAY_TOKEN}`);
-    } catch (err) {
-      console.warn('[wake] WebSocket constructor failed:', err);
-      clearTimeout(timeout);
-      resolve(false);
-      return;
+    if (!res.ok) {
+      console.warn(`[wake] failed: ${res.status} ${res.statusText}`);
+      return false;
     }
 
-    ws.onopen = () => {
-      console.log('[wake] connected to gateway');
-      // Also send token in connect frame as fallback
-      ws.send(JSON.stringify({ type: 'connect', params: { auth: { token: GATEWAY_TOKEN } } }));
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.type === 'hello-ok') {
-          console.log('[wake] authenticated, sending wake request');
-          ws.send(
-            JSON.stringify({
-              id: Date.now().toString(),
-              type: 'req',
-              method: 'system.wake',
-              params: { text: `MC action: ${text}`, mode: 'now' },
-            })
-          );
-          clearTimeout(timeout);
-          ws.close();
-          resolve(true);
-        } else {
-          console.warn('[wake] unexpected message:', msg);
-        }
-      } catch {
-        console.warn('[wake] failed to parse message:', event.data);
-        clearTimeout(timeout);
-        ws.close();
-        resolve(false);
-      }
-    };
-
-    ws.onerror = (event) => {
-      console.warn('[wake] WebSocket error:', event);
-      clearTimeout(timeout);
-      resolve(false);
-    };
-
-    ws.onclose = (event) => {
-      console.warn(`[wake] WebSocket closed: code=${event.code} reason=${event.reason}`);
-    };
-  });
+    const data = await res.json();
+    console.log('[wake] success:', data);
+    return data.ok === true;
+  } catch (err) {
+    console.warn('[wake] error:', err);
+    return false;
+  }
 }
 
 /** Fire-and-forget wake — never blocks UI */
