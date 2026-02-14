@@ -24,9 +24,10 @@ interface CreateTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated: () => void;
+  defaultProjectId?: string | null;
 }
 
-export function CreateTaskDialog({ open, onOpenChange, onCreated }: CreateTaskDialogProps) {
+export function CreateTaskDialog({ open, onOpenChange, onCreated, defaultProjectId }: CreateTaskDialogProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [assignee, setAssignee] = useState('Oskar');
@@ -46,6 +47,7 @@ export function CreateTaskDialog({ open, onOpenChange, onCreated }: CreateTaskDi
       priority,
       status: 'todo',
       due_date: dueDate || null,
+      project_id: defaultProjectId || null,
     });
 
     setTitle('');
