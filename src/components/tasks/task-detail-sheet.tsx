@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
 import type { Task } from '@/types';
+import { Users } from 'lucide-react';
 
 interface TaskDetailSheetProps {
   task: Task | null;
@@ -40,6 +41,25 @@ export function TaskDetailSheet({ task, open, onOpenChange, onUpdated }: TaskDet
   const [priority, setPriority] = useState<Task['priority']>('medium');
   const [dueDate, setDueDate] = useState('');
   const [saving, setSaving] = useState(false);
+  const [relatedPeople, setRelatedPeople] = useState<{ id: string; name: string; company: string; role: string }[]>([]);
+
+  useEffect(() => {
+    if (task) {
+      // Fetch related people
+      supabase
+        .from('mc_task_people')
+        .select('role, person:mc_people!person_id(id, name, company)')
+        .eq('task_id', task.id)
+        .then(({ data }) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const rows = data as any[] | null;
+          const people = (rows || [])
+            .filter((d) => d.person !== null)
+            .map((d) => ({ id: d.person.id, name: d.person.name, company: d.person.company || '', role: d.role }));
+          setRelatedPeople(people);
+        });
+    }
+  }, [task]);
 
   useEffect(() => {
     if (task) {
@@ -197,6 +217,22 @@ export function TaskDetailSheet({ task, open, onOpenChange, onUpdated }: TaskDet
                 <p className="text-sm">{new Date(task.created_at).toLocaleDateString()}</p>
               </div>
             </div>
+            {relatedPeople.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Users className="w-3.5 h-3.5 text-muted-foreground" />
+                  <Label className="text-muted-foreground text-xs">Related People</Label>
+                </div>
+                <div className="space-y-1.5">
+                  {relatedPeople.map((p) => (
+                    <div key={p.id} className="flex items-center justify-between text-sm">
+                      <span>{p.name}{p.company ? ` (${p.company})` : ''}</span>
+                      <Badge variant="outline" className="text-[10px]">{p.role}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

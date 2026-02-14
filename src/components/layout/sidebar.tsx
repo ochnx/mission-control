@@ -14,6 +14,9 @@ import {
   Zap,
   LayoutDashboard,
   Activity,
+  Briefcase,
+  Clock,
+  Terminal,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -25,10 +28,13 @@ const navItems = [
   { key: 'calendar', label: 'Calendar', icon: Calendar, href: '/calendar', emoji: '📅' },
   { key: 'people', label: 'People', icon: Users, href: '/people', emoji: '👥' },
   { key: 'projects', label: 'Projects', icon: FolderOpen, href: '/projects', emoji: '📁' },
+  { key: 'deals', label: 'Deals', icon: Briefcase, href: '/deals', emoji: '💼' },
   { key: 'activity', label: 'Activity', icon: Activity, href: '/activity', emoji: '📊' },
+  { key: 'timeline', label: 'Timeline', icon: Clock, href: '/timeline', emoji: '⏰' },
+  { key: 'commands', label: 'Commands', icon: Terminal, href: '/commands', emoji: '⚡' },
 ];
 
-export function Sidebar() {
+export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -59,8 +65,9 @@ export function Sidebar() {
             <Link
               key={item.key}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px]',
                 'hover:bg-accent hover:text-accent-foreground',
                 isActive
                   ? 'bg-primary/10 text-primary'

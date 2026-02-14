@@ -68,4 +68,60 @@ export interface AgentActivity {
   created_at: string;
 }
 
-export type ModuleKey = 'tasks' | 'memory' | 'calendar' | 'people' | 'projects' | 'activity';
+export type SuggestionType = 'overdue_task' | 'follow_up' | 'deal_action' | 'calendar_gap' | 'insight';
+
+export interface Suggestion {
+  id: string;
+  suggestion_type: SuggestionType;
+  title: string;
+  description: string | null;
+  action_type: string | null;
+  action_data: Record<string, unknown> | null;
+  priority: 'high' | 'medium' | 'low';
+  status: 'pending' | 'accepted' | 'dismissed';
+  created_at: string;
+}
+
+export interface Deal {
+  id: string;
+  name: string;
+  company_id: string | null;
+  stage: 'lead' | 'proposal' | 'negotiation' | 'signed' | 'active' | 'churned';
+  value_monthly: number | null;
+  value_budget: number | null;
+  value_courtage: number | null;
+  notes: string;
+  next_action: string | null;
+  next_action_date: string | null;
+  created_at: string;
+  updated_at: string;
+  company?: Person;
+}
+
+export interface TaskPerson {
+  task_id: string;
+  person_id: string;
+  role: 'assignee' | 'stakeholder' | 'related';
+  person?: Person;
+  task?: Task;
+}
+
+export interface MemoryLink {
+  memory_id: string;
+  entity_type: 'task' | 'project' | 'person';
+  entity_id: string;
+}
+
+export interface AgentCommand {
+  id: string;
+  command_type: 'research' | 'draft_email' | 'generate_report' | 'custom';
+  target_type: 'person' | 'task' | 'project' | null;
+  target_id: string | null;
+  parameters: Record<string, unknown>;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  result: string | null;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export type ModuleKey = 'tasks' | 'memory' | 'calendar' | 'people' | 'projects' | 'activity' | 'deals' | 'timeline' | 'commands';

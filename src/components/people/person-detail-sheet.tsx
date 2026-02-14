@@ -15,7 +15,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
-import type { Person } from '@/types';
+import type { Person, Deal } from '@/types';
+import { Target, Briefcase } from 'lucide-react';
 
 interface PersonDetailSheetProps {
   person: Person | null;
@@ -35,6 +36,36 @@ export function PersonDetailSheet({ person, open, onOpenChange, onUpdated }: Per
   const [tags, setTags] = useState('');
   const [lastContact, setLastContact] = useState('');
   const [saving, setSaving] = useState(false);
+  const [relatedTasks, setRelatedTasks] = useState<{ id: string; title: string; status: string; priority: string; link_role: string }[]>([]);
+  const [relatedDeals, setRelatedDeals] = useState<Deal[]>([]);
+
+  useEffect(() => {
+    if (person) {
+      // Fetch related tasks
+      supabase
+        .from('mc_task_people')
+        .select('role, task:mc_tasks!task_id(id, title, status, priority)')
+        .eq('person_id', person.id)
+        .then(({ data }) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const rows = data as any[] | null;
+          const tasks = (rows || [])
+            .filter((d) => d.task !== null)
+            .map((d) => ({ id: d.task.id, title: d.task.title, status: d.task.status, priority: d.task.priority, link_role: d.role }));
+          setRelatedTasks(tasks);
+        });
+
+      // Fetch related deals
+      supabase
+        .from('mc_deals')
+        .select('*')
+        .eq('company_id', person.id)
+        .order('created_at', { ascending: false })
+        .then(({ data }) => {
+          setRelatedDeals((data as Deal[]) || []);
+        });
+    }
+  }, [person]);
 
   useEffect(() => {
     if (person) {
@@ -208,6 +239,46 @@ export function PersonDetailSheet({ person, open, onOpenChange, onUpdated }: Per
               <Label className="text-muted-foreground text-xs">Added</Label>
               <p className="text-sm text-muted-foreground">{new Date(person.created_at).toLocaleDateString()}</p>
             </div>
+            {relatedTasks.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Target className="w-3.5 h-3.5 text-muted-foreground" />
+                  <Label className="text-muted-foreground text-xs">Related Tasks</Label>
+                </div>
+                <div className="space-y-1.5">
+                  {relatedTasks.map((t) => (
+                    <div key={t.id} className="flex items-center justify-between text-sm">
+                      <span className="truncate">{t.title}</span>
+                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                        <Badge variant="outline" className="text-[10px] capitalize">{t.status.replace('_', ' ')}</Badge>
+                        <Badge variant="outline" className="text-[10px]">{t.link_role}</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {relatedDeals.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Briefcase className="w-3.5 h-3.5 text-muted-foreground" />
+                  <Label className="text-muted-foreground text-xs">Deals</Label>
+                </div>
+                <div className="space-y-1.5">
+                  {relatedDeals.map((d) => (
+                    <div key={d.id} className="flex items-center justify-between text-sm">
+                      <span className="truncate">{d.name}</span>
+                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                        <Badge variant="outline" className="text-[10px] capitalize">{d.stage}</Badge>
+                        {d.value_monthly && (
+                          <span className="text-[10px] text-emerald-400">&euro;{d.value_monthly.toLocaleString('de-DE')}/mo</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

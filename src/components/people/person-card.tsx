@@ -1,9 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import { format } from 'date-fns';
-import { Mail, Phone, User, Trash2 } from 'lucide-react';
+import { Mail, Phone, User, Trash2, MoreHorizontal, Search, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { supabase } from '@/lib/supabase';
 import type { Person } from '@/types';
 
@@ -14,9 +21,22 @@ interface PersonCardProps {
 }
 
 export function PersonCard({ person, onUpdated, onClick }: PersonCardProps) {
+  const [commanding, setCommanding] = useState(false);
+
   const handleDelete = async () => {
     await supabase.from('mc_people').delete().eq('id', person.id);
     onUpdated();
+  };
+
+  const sendCommand = async (commandType: string) => {
+    setCommanding(true);
+    await supabase.from('mc_agent_commands').insert({
+      command_type: commandType,
+      target_type: 'person',
+      target_id: person.id,
+      parameters: { name: person.name, company: person.company, email: person.email },
+    });
+    setCommanding(false);
   };
 
   return (
@@ -33,14 +53,43 @@ export function PersonCard({ person, onUpdated, onClick }: PersonCardProps) {
             )}
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-          onClick={handleDelete}
-        >
-          <Trash2 className="w-3 h-3" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
+                onClick={(e) => e.stopPropagation()}
+                disabled={commanding}
+              >
+                <MoreHorizontal className="w-3.5 h-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+              <DropdownMenuItem onClick={() => sendCommand('research')}>
+                <Search className="w-3.5 h-3.5 mr-2" />
+                Research
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => sendCommand('draft_email')}>
+                <Mail className="w-3.5 h-3.5 mr-2" />
+                Draft Email
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => sendCommand('generate_report')}>
+                <FileText className="w-3.5 h-3.5 mr-2" />
+                Report
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+            onClick={(e) => { e.stopPropagation(); handleDelete(); }}
+          >
+            <Trash2 className="w-3 h-3" />
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-1.5 mb-3">

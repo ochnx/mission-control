@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { format } from 'date-fns';
-import { FolderOpen, ListTodo, Trash2 } from 'lucide-react';
+import { FolderOpen, ListTodo, Trash2, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import type { Project } from '@/types';
@@ -23,9 +25,23 @@ const statusColors: Record<string, string> = {
 };
 
 export function ProjectCard({ project, onUpdated, onClick }: ProjectCardProps) {
+  const [commanding, setCommanding] = useState(false);
+
   const handleDelete = async () => {
     await supabase.from('mc_projects').delete().eq('id', project.id);
     onUpdated();
+  };
+
+  const handleGenerateReport = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCommanding(true);
+    await supabase.from('mc_agent_commands').insert({
+      command_type: 'generate_report',
+      target_type: 'project',
+      target_id: project.id,
+      parameters: { name: project.name, status: project.status },
+    });
+    setCommanding(false);
   };
 
   return (
@@ -45,14 +61,30 @@ export function ProjectCard({ project, onUpdated, onClick }: ProjectCardProps) {
             </Badge>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-          onClick={handleDelete}
-        >
-          <Trash2 className="w-3 h-3" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
+                onClick={handleGenerateReport}
+                disabled={commanding}
+              >
+                <FileText className="w-3 h-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">Generate Report</TooltipContent>
+          </Tooltip>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+            onClick={(e) => { e.stopPropagation(); handleDelete(); }}
+          >
+            <Trash2 className="w-3 h-3" />
+          </Button>
+        </div>
       </div>
 
       {project.description && (

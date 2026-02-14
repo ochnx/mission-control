@@ -1,11 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { format } from 'date-fns';
-import { GripVertical, Calendar } from 'lucide-react';
+import { GripVertical, Calendar, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
 import type { Task } from '@/types';
 
 interface TaskCardProps {
@@ -20,6 +24,8 @@ const priorityColors: Record<string, string> = {
 };
 
 export function TaskCard({ task, onClick }: TaskCardProps) {
+  const [commanding, setCommanding] = useState(false);
+
   const {
     attributes,
     listeners,
@@ -33,6 +39,18 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+  };
+
+  const handleDeepDive = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCommanding(true);
+    await supabase.from('mc_agent_commands').insert({
+      command_type: 'research',
+      target_type: 'task',
+      target_id: task.id,
+      parameters: { title: task.title, description: task.description },
+    });
+    setCommanding(false);
   };
 
   return (
@@ -56,7 +74,23 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
           <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
         </button>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium leading-tight">{task.title}</p>
+          <div className="flex items-start justify-between gap-1">
+            <p className="text-sm font-medium leading-tight">{task.title}</p>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-5 h-5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
+                  onClick={handleDeepDive}
+                  disabled={commanding}
+                >
+                  <Search className="w-3 h-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">Deep Dive</TooltipContent>
+            </Tooltip>
+          </div>
           {task.description && (
             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
               {task.description}
