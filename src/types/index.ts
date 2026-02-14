@@ -57,4 +57,15 @@ export interface Project {
   tasks_count?: number;
 }
 
-export type ModuleKey = 'tasks' | 'memory' | 'calendar' | 'people' | 'projects';
+export interface AgentActivity {
+  id: string;
+  action_type: string;
+  status: 'success' | 'error' | 'running';
+  summary: string;
+  details: Record<string, unknown>;
+  cron_job_name: string | null;
+  duration_ms: number | null;
+  created_at: string;
+}
+
+export type ModuleKey = 'tasks' | 'memory' | 'calendar' | 'people' | 'projects' | 'activity';

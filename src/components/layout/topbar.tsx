@@ -5,11 +5,13 @@ import { Search, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const breadcrumbMap: Record<string, string> = {
+  '/': 'Command Center',
   '/tasks': 'Tasks',
   '/memory': 'Second Brain',
   '/calendar': 'Calendar & Reminders',
   '/people': 'People',
   '/projects': 'Projects',
+  '/activity': 'Activity Log',
 };
 
 interface TopbarProps {

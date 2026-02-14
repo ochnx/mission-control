@@ -12,16 +12,20 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
+  LayoutDashboard,
+  Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const navItems = [
+  { key: 'home', label: 'Command Center', icon: LayoutDashboard, href: '/', emoji: '🏠' },
   { key: 'tasks', label: 'Tasks', icon: Target, href: '/tasks', emoji: '🎯' },
   { key: 'memory', label: 'Second Brain', icon: Brain, href: '/memory', emoji: '🧠' },
   { key: 'calendar', label: 'Calendar', icon: Calendar, href: '/calendar', emoji: '📅' },
   { key: 'people', label: 'People', icon: Users, href: '/people', emoji: '👥' },
   { key: 'projects', label: 'Projects', icon: FolderOpen, href: '/projects', emoji: '📁' },
+  { key: 'activity', label: 'Activity', icon: Activity, href: '/activity', emoji: '📊' },
 ];
 
 export function Sidebar() {
@@ -50,7 +54,7 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 py-4 px-2 space-y-1">
         {navItems.map((item) => {
-          const isActive = pathname.startsWith(item.href);
+          const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
           const linkContent = (
             <Link
               key={item.key}
