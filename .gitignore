@@ -1,0 +1,9 @@
+node_modules/
+out/
+.next/
+src/
+scripts/
+supabase/
+*.ts
+*.json
+package*
