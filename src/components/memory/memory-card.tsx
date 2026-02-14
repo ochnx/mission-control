@@ -1,16 +1,16 @@
 'use client';
 
-import { format } from 'date-fns';
-import { FileText, Trash2 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { Link2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabase';
 import type { Memory } from '@/types';
+import { cn } from '@/lib/utils';
 
 interface MemoryCardProps {
   memory: Memory;
-  onDeleted: () => void;
-  onClick?: () => void;
+  selected: boolean;
+  entityCount: number;
+  onClick: () => void;
 }
 
 const categoryColors: Record<string, string> = {
@@ -21,54 +21,59 @@ const categoryColors: Record<string, string> = {
   Projects: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
 };
 
-export function MemoryCard({ memory, onDeleted, onClick }: MemoryCardProps) {
-  const handleDelete = async () => {
-    await supabase.from('mc_memories').delete().eq('id', memory.id);
-    onDeleted();
-  };
-
+export function MemoryCard({ memory, selected, entityCount, onClick }: MemoryCardProps) {
   return (
-    <div className="glass-card rounded-lg p-4 group hover:border-primary/20 transition-all cursor-pointer" onClick={onClick}>
-      <div className="flex items-start justify-between mb-2">
+    <button
+      onClick={onClick}
+      className={cn(
+        'w-full text-left p-3 rounded-lg border transition-all duration-150',
+        'hover:bg-accent/50',
+        selected
+          ? 'border-primary/30 bg-primary/5'
+          : 'border-transparent hover:border-border'
+      )}
+    >
+      <div className="flex items-center gap-2 mb-1.5">
         <Badge
           variant="outline"
-          className={categoryColors[memory.category] || ''}
+          className={cn('text-[10px] py-0 px-1.5', categoryColors[memory.category])}
         >
           {memory.category}
         </Badge>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-          onClick={handleDelete}
-        >
-          <Trash2 className="w-3 h-3" />
-        </Button>
+        <span className="text-[10px] text-muted-foreground ml-auto shrink-0">
+          {formatDistanceToNow(new Date(memory.created_at), { addSuffix: true })}
+        </span>
       </div>
 
-      <p className="text-sm leading-relaxed mb-3">{memory.content}</p>
+      <p className="text-sm leading-relaxed line-clamp-2 text-foreground/90">
+        {memory.content}
+      </p>
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          {memory.source_file && (
-            <>
-              <FileText className="w-3 h-3" />
-              <span className="truncate max-w-[120px]">{memory.source_file}</span>
-            </>
-          )}
-        </div>
-        <span>{format(new Date(memory.created_at), 'MMM d, yyyy')}</span>
+      <div className="flex items-center gap-2 mt-2">
+        {memory.tags && memory.tags.length > 0 && (
+          <div className="flex items-center gap-1 overflow-hidden flex-1 min-w-0">
+            {memory.tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0"
+              >
+                #{tag}
+              </span>
+            ))}
+            {memory.tags.length > 3 && (
+              <span className="text-[10px] text-muted-foreground">
+                +{memory.tags.length - 3}
+              </span>
+            )}
+          </div>
+        )}
+        {entityCount > 0 && (
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0 ml-auto">
+            <Link2 className="w-3 h-3" />
+            {entityCount}
+          </div>
+        )}
       </div>
-
-      {memory.tags && memory.tags.length > 0 && (
-        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-          {memory.tags.map((tag) => (
-            <span key={tag} className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-              #{tag}
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
+    </button>
   );
 }

@@ -30,7 +30,6 @@ export function CreateMemoryDialog({ open, onOpenChange, onCreated }: CreateMemo
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('Learnings');
   const [tagsInput, setTagsInput] = useState('');
-  const [sourceFile, setSourceFile] = useState('');
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,13 +46,12 @@ export function CreateMemoryDialog({ open, onOpenChange, onCreated }: CreateMemo
       content: content.trim(),
       category,
       tags,
-      source_file: sourceFile.trim(),
+      source_type: 'manual',
     });
 
     setContent('');
     setCategory('Learnings');
     setTagsInput('');
-    setSourceFile('');
     setSaving(false);
     onOpenChange(false);
     onCreated();
@@ -61,56 +59,46 @@ export function CreateMemoryDialog({ open, onOpenChange, onCreated }: CreateMemo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add Memory</DialogTitle>
+          <DialogTitle>Quick Capture</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="content">Content</Label>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="What's worth remembering?"
-              rows={4}
-              autoFocus
-            />
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="What's worth remembering?"
+            rows={6}
+            autoFocus
+            className="resize-y"
+          />
+          <div className="flex items-end gap-3">
+            <div className="space-y-1.5 flex-1">
+              <Label className="text-xs text-muted-foreground">Category (optional)</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Decisions">Decisions</SelectItem>
+                  <SelectItem value="Learnings">Learnings</SelectItem>
+                  <SelectItem value="Rules">Rules</SelectItem>
+                  <SelectItem value="People">People</SelectItem>
+                  <SelectItem value="Projects">Projects</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5 flex-1">
+              <Label className="text-xs text-muted-foreground">Tags (optional)</Label>
+              <Input
+                value={tagsInput}
+                onChange={(e) => setTagsInput(e.target.value)}
+                placeholder="tag1, tag2"
+                className="h-9"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>Category</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Decisions">Decisions</SelectItem>
-                <SelectItem value="Learnings">Learnings</SelectItem>
-                <SelectItem value="Rules">Rules</SelectItem>
-                <SelectItem value="People">People</SelectItem>
-                <SelectItem value="Projects">Projects</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="tags">Tags (comma-separated)</Label>
-            <Input
-              id="tags"
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="e.g. supabase, workflow, design"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="source">Source File</Label>
-            <Input
-              id="source"
-              value={sourceFile}
-              onChange={(e) => setSourceFile(e.target.value)}
-              placeholder="e.g. AGENTS.md"
-            />
-          </div>
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>

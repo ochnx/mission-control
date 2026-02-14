@@ -13,13 +13,28 @@ export interface Task {
   project?: Project;
 }
 
+export interface MemoryEntity {
+  id: string;
+  memory_id: string;
+  entity_type: 'person' | 'company' | 'project' | 'deal' | 'property';
+  entity_name: string;
+  entity_id: string | null;
+  created_at: string;
+}
+
 export interface Memory {
   id: string;
   content: string;
   category: 'Decisions' | 'Learnings' | 'Rules' | 'People' | 'Projects';
   tags: string[];
   source_file: string;
+  source_type: 'manual' | 'telegram' | 'email' | 'agent';
+  last_accessed_at: string | null;
+  access_count: number;
+  relevance_score: number;
   created_at: string;
+  // joined
+  entities?: MemoryEntity[];
 }
 
 export interface Reminder {
