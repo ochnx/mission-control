@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -24,14 +24,22 @@ interface CreateReminderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated: () => void;
+  prefillDate?: string;
 }
 
-export function CreateReminderDialog({ open, onOpenChange, onCreated }: CreateReminderDialogProps) {
+export function CreateReminderDialog({ open, onOpenChange, onCreated, prefillDate }: CreateReminderDialogProps) {
   const [title, setTitle] = useState('');
   const [datetime, setDatetime] = useState('');
   const [type, setType] = useState('reminder');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Prefill date when dialog opens with a prefillDate
+  useEffect(() => {
+    if (open && prefillDate) {
+      setDatetime(prefillDate);
+    }
+  }, [open, prefillDate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
