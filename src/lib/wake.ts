@@ -1,4 +1,5 @@
 const GATEWAY_URL = 'wss://mac-mini-von-oskar.tail31e8e5.ts.net';
+const GATEWAY_TOKEN = 'geheim';
 
 export async function wakeAgent(text: string): Promise<boolean> {
   return new Promise((resolve) => {
@@ -17,7 +18,7 @@ export async function wakeAgent(text: string): Promise<boolean> {
     }
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({ type: 'connect', params: {} }));
+      ws.send(JSON.stringify({ type: 'connect', params: { auth: { token: GATEWAY_TOKEN } } }));
     };
 
     ws.onmessage = (event) => {
