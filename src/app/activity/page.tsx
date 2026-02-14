@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { usePolling } from '@/hooks/use-polling';
 import type { AgentActivity } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -76,9 +77,7 @@ export default function ActivityPage() {
     setLoading(false);
   }, [filter]);
 
-  useEffect(() => {
-    fetchActivities();
-  }, [fetchActivities]);
+  usePolling(fetchActivities);
 
   // Group activities by date
   const grouped = activities.reduce<Record<string, AgentActivity[]>>((acc, activity) => {

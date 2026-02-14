@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { usePolling } from '@/hooks/use-polling';
 import type { AgentCommand } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -62,9 +63,7 @@ export default function CommandsPage() {
     setLoading(false);
   }, [statusFilter]);
 
-  useEffect(() => {
-    fetchCommands();
-  }, [fetchCommands]);
+  usePolling(fetchCommands);
 
   return (
     <div className="space-y-6">

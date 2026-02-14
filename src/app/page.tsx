@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useWake } from '@/hooks/use-wake';
+import { usePolling } from '@/hooks/use-polling';
 import { WakeToast } from '@/components/wake-toast';
 import type { Task, Reminder, AgentActivity, Person, Suggestion, AgentCommand } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -141,9 +142,7 @@ export default function NerveCenterPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+  const { lastUpdated } = usePolling(fetchAll);
 
   const handleSuggestionAction = async (id: string, newStatus: 'accepted' | 'dismissed') => {
     const suggestion = suggestions.find((s) => s.id === id);
@@ -219,9 +218,9 @@ export default function NerveCenterPage() {
               {agentOnline ? 'Active' : 'Offline'}
             </span>
           </div>
-          {lastActivity && (
-            <span className="text-xs text-muted-foreground hidden sm:inline">
-              Last action: {relativeTime(lastActivity.created_at)}
+          {lastUpdated && (
+            <span className="text-[10px] text-muted-foreground/50 hidden sm:inline">
+              Updated {formatDistanceToNow(lastUpdated, { addSuffix: true })}
             </span>
           )}
         </div>

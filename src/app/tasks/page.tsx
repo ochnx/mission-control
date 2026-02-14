@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useWake } from '@/hooks/use-wake';
+import { usePolling } from '@/hooks/use-polling';
 import { WakeToast } from '@/components/wake-toast';
 import type { Task } from '@/types';
 import { KanbanBoard } from '@/components/tasks/kanban-board';
@@ -37,9 +38,7 @@ export default function TasksPage() {
     setLoading(false);
   }, [filterAssignee, filterPriority]);
 
-  useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+  usePolling(fetchTasks);
 
   const updateTaskStatus = async (taskId: string, newStatus: Task['status']) => {
     await supabase.from('mc_tasks').update({ status: newStatus }).eq('id', taskId);
