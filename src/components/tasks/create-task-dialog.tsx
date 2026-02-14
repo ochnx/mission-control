@@ -23,7 +23,7 @@ import { supabase } from '@/lib/supabase';
 interface CreateTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: () => void;
+  onCreated: (title?: string) => void;
   defaultProjectId?: string | null;
 }
 
@@ -50,6 +50,7 @@ export function CreateTaskDialog({ open, onOpenChange, onCreated, defaultProject
       project_id: defaultProjectId || null,
     });
 
+    const createdTitle = title.trim();
     setTitle('');
     setDescription('');
     setAssignee('Oskar');
@@ -57,7 +58,7 @@ export function CreateTaskDialog({ open, onOpenChange, onCreated, defaultProject
     setDueDate('');
     setSaving(false);
     onOpenChange(false);
-    onCreated();
+    onCreated(createdTitle);
   };
 
   return (

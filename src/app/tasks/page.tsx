@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useWake } from '@/hooks/use-wake';
+import { WakeToast } from '@/components/wake-toast';
 import type { Task } from '@/types';
 import { KanbanBoard } from '@/components/tasks/kanban-board';
 import { TaskFilters } from '@/components/tasks/task-filters';
@@ -18,6 +20,7 @@ export default function TasksPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const { wake, toastVisible } = useWake();
 
   const fetchTasks = useCallback(async () => {
     let query = supabase.from('mc_tasks').select('*').order('created_at', { ascending: false });
@@ -85,7 +88,10 @@ export default function TasksPage() {
       <CreateTaskDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onCreated={fetchTasks}
+        onCreated={(title) => {
+          fetchTasks();
+          if (title) wake(`New task created: ${title}`);
+        }}
       />
 
       <TaskDetailSheet
@@ -94,6 +100,8 @@ export default function TasksPage() {
         onOpenChange={setDetailOpen}
         onUpdated={fetchTasks}
       />
+
+      <WakeToast visible={toastVisible} />
     </div>
   );
 }

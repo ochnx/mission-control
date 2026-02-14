@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useWake } from '@/hooks/use-wake';
+import { WakeToast } from '@/components/wake-toast';
 import type { Task, Reminder, AgentActivity, Person, Suggestion, AgentCommand } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -114,6 +116,7 @@ export default function NerveCenterPage() {
   const [quickCommand, setQuickCommand] = useState('');
   const [sendingCommand, setSendingCommand] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const { wake, toastVisible } = useWake();
 
   const toggleSection = (key: string) => {
     setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -143,20 +146,24 @@ export default function NerveCenterPage() {
   }, [fetchAll]);
 
   const handleSuggestionAction = async (id: string, newStatus: 'accepted' | 'dismissed') => {
+    const suggestion = suggestions.find((s) => s.id === id);
     await supabase.from('mc_suggestions').update({ status: newStatus }).eq('id', id);
     setSuggestions((prev) => prev.filter((s) => s.id !== id));
+    wake(`Suggestion ${newStatus}: ${suggestion?.title || id}`);
   };
 
   const sendQuickCommand = async () => {
     if (!quickCommand.trim()) return;
+    const text = quickCommand.trim();
     setSendingCommand(true);
     await supabase.from('mc_agent_commands').insert({
       command_type: 'custom',
-      parameters: { text: quickCommand.trim() },
+      parameters: { text },
     });
     setQuickCommand('');
     setSendingCommand(false);
     fetchAll();
+    wake(`New command: ${text}`);
   };
 
   // Derived data
@@ -641,6 +648,8 @@ export default function NerveCenterPage() {
           </CardContent>
         </Card>
       </div>
+
+      <WakeToast visible={toastVisible} />
     </div>
   );
 }
