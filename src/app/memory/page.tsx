@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Search, Brain } from 'lucide-react';
+import { Plus, Search, Brain, ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
@@ -57,22 +57,50 @@ export default function MemoryPage() {
           ? 'relevance_score'
           : 'created_at';
 
-    let query = supabase
-      .from('mc_memories')
-      .select('*')
-      .order(sortColumn, { ascending: false });
+    const buildQuery = (orderCol: string) => {
+      let q = supabase
+        .from('mc_memories')
+        .select('*')
+        .order(orderCol, { ascending: false });
 
-    if (category !== 'All') {
-      query = query.eq('category', category);
-    }
-    if (sourceFilter !== 'All') {
-      query = query.eq('source_type', sourceFilter);
-    }
-    if (search.trim()) {
-      query = query.ilike('content', `%${search}%`);
+      if (category !== 'All') {
+        q = q.eq('category', category);
+      }
+      if (sourceFilter !== 'All') {
+        q = q.eq('source_type', sourceFilter);
+      }
+      if (search.trim()) {
+        q = q.ilike('content', `%${search}%`);
+      }
+      return q;
+    };
+
+    let { data, error } = await buildQuery(sortColumn);
+
+    // Graceful fallback: if the sort column doesn't exist, retry with created_at
+    if (error && sortColumn !== 'created_at') {
+      const fallback = await buildQuery('created_at');
+      data = fallback.data;
+      error = fallback.error;
     }
 
-    const { data } = await query;
+    // If source_type filter caused the error, retry without it
+    if (error && sourceFilter !== 'All') {
+      let q = supabase
+        .from('mc_memories')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (category !== 'All') {
+        q = q.eq('category', category);
+      }
+      if (search.trim()) {
+        q = q.ilike('content', `%${search}%`);
+      }
+      const result = await q;
+      data = result.data;
+    }
+
     setMemories((data as Memory[]) || []);
     setLoading(false);
   }, [category, sourceFilter, search, sortBy]);
@@ -153,14 +181,18 @@ export default function MemoryPage() {
         setRelatedMemories([]);
       }
 
-      // Increment access count
-      await supabase
-        .from('mc_memories')
-        .update({
-          last_accessed_at: new Date().toISOString(),
-          access_count: (memories.find((m) => m.id === selectedId)?.access_count ?? 0) + 1,
-        })
-        .eq('id', selectedId);
+      // Increment access count (gracefully — ignore errors for missing columns)
+      try {
+        await supabase
+          .from('mc_memories')
+          .update({
+            last_accessed_at: new Date().toISOString(),
+            access_count: (memories.find((m) => m.id === selectedId)?.access_count ?? 0) + 1,
+          })
+          .eq('id', selectedId);
+      } catch {
+        // Column may not exist yet — ignore
+      }
     }
 
     fetchDetail();
@@ -187,13 +219,17 @@ export default function MemoryPage() {
   };
 
   return (
-    <div className="flex -m-6 h-[calc(100vh-3.5rem)]">
-      {/* Left Sidebar - Memory List */}
-      <div className="w-full md:w-[40%] md:min-w-[340px] md:max-w-[480px] border-r border-border flex flex-col bg-background">
-        {/* Header */}
+    <div className="flex -m-4 md:-m-6 h-[calc(100vh-3.5rem)]">
+      {/* Left Sidebar - Memory List (hidden on mobile when detail is selected) */}
+      <div
+        className={cn(
+          'w-full md:w-[40%] md:min-w-[340px] md:max-w-[480px] border-r border-border flex flex-col bg-background',
+          selectedId && 'hidden md:flex'
+        )}
+      >
+        {/* Header — no duplicate title, Topbar already shows "Second Brain" */}
         <div className="p-4 border-b border-border space-y-3 shrink-0">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold tracking-tight">Second Brain</h2>
+          <div className="flex items-center justify-end">
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
               <SelectTrigger className="w-[140px] h-8 text-xs">
                 <SelectValue />
@@ -217,8 +253,8 @@ export default function MemoryPage() {
             />
           </div>
 
-          {/* Category Pills */}
-          <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Category Pills — gap-2 + flex-wrap */}
+          <div className="flex items-center gap-2 flex-wrap">
             {categories.map((cat) => (
               <Badge
                 key={cat}
@@ -234,8 +270,8 @@ export default function MemoryPage() {
             ))}
           </div>
 
-          {/* Source Filter */}
-          <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Source Filter — gap-2 + flex-wrap */}
+          <div className="flex items-center gap-2 flex-wrap">
             {sourceTypes.map((src) => (
               <Badge
                 key={src}
@@ -283,7 +319,7 @@ export default function MemoryPage() {
         </ScrollArea>
       </div>
 
-      {/* Right Panel - Detail View */}
+      {/* Right Panel - Detail View (desktop only) */}
       <div className="hidden md:flex flex-1 flex-col bg-background min-w-0">
         {selectedMemory ? (
           <MemoryDetailPanel
@@ -315,14 +351,20 @@ export default function MemoryPage() {
         )}
       </div>
 
-      {/* Mobile Detail View (shown below list when memory selected) */}
+      {/* Mobile Detail View — full-screen overlay */}
       {selectedMemory && (
         <div className="fixed inset-0 z-50 bg-background md:hidden flex flex-col">
-          <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
-            <h3 className="text-sm font-medium">Memory Detail</h3>
-            <Button variant="ghost" size="sm" onClick={() => setSelectedId(null)}>
+          <div className="flex items-center gap-2 p-3 border-b border-border shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 min-h-[44px]"
+              onClick={() => setSelectedId(null)}
+            >
+              <ArrowLeft className="w-4 h-4" />
               Back
             </Button>
+            <span className="text-sm font-medium truncate">Memory Detail</span>
           </div>
           <div className="flex-1 overflow-hidden">
             <MemoryDetailPanel
@@ -337,10 +379,10 @@ export default function MemoryPage() {
         </div>
       )}
 
-      {/* Floating Quick Capture Button */}
+      {/* Floating Quick Capture Button — lifted on mobile to avoid browser chrome */}
       <button
         onClick={() => setCreateOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center z-40"
+        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center z-40"
       >
         <Plus className="w-6 h-6" />
       </button>
