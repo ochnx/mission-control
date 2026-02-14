@@ -124,4 +124,4 @@ export interface AgentCommand {
   completed_at: string | null;
 }
 
-export type ModuleKey = 'tasks' | 'memory' | 'calendar' | 'people' | 'projects' | 'activity' | 'deals' | 'timeline' | 'commands';
+export type ModuleKey = 'tasks' | 'memory' | 'calendar' | 'people' | 'projects' | 'activity' | 'graph' | 'timeline' | 'commands';

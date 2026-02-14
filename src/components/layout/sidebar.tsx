@@ -14,9 +14,9 @@ import {
   Zap,
   LayoutDashboard,
   Activity,
-  Briefcase,
   Clock,
   Terminal,
+  Network,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -28,7 +28,7 @@ const navItems = [
   { key: 'calendar', label: 'Calendar', icon: Calendar, href: '/calendar', emoji: '📅' },
   { key: 'people', label: 'People', icon: Users, href: '/people', emoji: '👥' },
   { key: 'projects', label: 'Projects', icon: FolderOpen, href: '/projects', emoji: '📁' },
-  { key: 'deals', label: 'Deals', icon: Briefcase, href: '/deals', emoji: '💼' },
+  { key: 'graph', label: 'Graph', icon: Network, href: '/graph', emoji: '🔗' },
   { key: 'activity', label: 'Activity', icon: Activity, href: '/activity', emoji: '📊' },
   { key: 'timeline', label: 'Timeline', icon: Clock, href: '/timeline', emoji: '⏰' },
   { key: 'commands', label: 'Commands', icon: Terminal, href: '/commands', emoji: '⚡' },

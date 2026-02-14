@@ -12,7 +12,7 @@ const breadcrumbMap: Record<string, string> = {
   '/people': 'People',
   '/projects': 'Projects',
   '/activity': 'Activity Log',
-  '/deals': 'Deals',
+  '/graph': 'Knowledge Graph',
   '/timeline': 'Timeline',
   '/commands': 'Commands',
 };
