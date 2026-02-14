@@ -28,7 +28,6 @@ const navItems = [
   { key: 'calendar', label: 'Calendar', icon: Calendar, href: '/calendar', emoji: '📅' },
   { key: 'people', label: 'People', icon: Users, href: '/people', emoji: '👥' },
   { key: 'projects', label: 'Projects', icon: FolderOpen, href: '/projects', emoji: '📁' },
-  { key: 'graph', label: 'Graph', icon: Network, href: '/graph', emoji: '🔗' },
   { key: 'activity', label: 'Activity', icon: Activity, href: '/activity', emoji: '📊' },
   { key: 'timeline', label: 'Timeline', icon: Clock, href: '/timeline', emoji: '⏰' },
   { key: 'commands', label: 'Commands', icon: Terminal, href: '/commands', emoji: '⚡' },
